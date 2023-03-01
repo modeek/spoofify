@@ -123,7 +123,7 @@ if (args[0] === "add") {
   const hostsFile = fs.readFileSync(hostsFilePath, "utf-8");
   const lines = hostsFile.split("\n");
 
-  if (lines.findIndex((a) => a === entry)) {
+  if (lines.findIndex((a) => a === entry) > -1) {
     console.error(`${hostname}:${args[2]} already exists is hosts file`);
     return;
   }
