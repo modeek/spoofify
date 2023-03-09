@@ -2,11 +2,9 @@
 
 const fs = require("fs");
 const sudo = require("sudo-prompt");
-const http = require("http");
-const https = require("https");
-const crypto = require('crypto');
-const tls = require('tls');
-const forge = require('node-forge');
+const crypto = require("crypto");
+const forge = require("node-forge");
+const RedWire = require("redwire");
 
 const { parse } = require("url");
 
@@ -14,53 +12,56 @@ function generateGuid() {
   const buf = crypto.randomBytes(16);
   buf[6] = (buf[6] & 0x0f) | 0x40; // set version to 4
   buf[8] = (buf[8] & 0x3f) | 0x80; // set variant to RFC 4122
-  return Buffer.from(buf).toString('base64');
+  return Buffer.from(buf).toString("base64");
 }
 
-const npmDirPath = '.npm';
+const npmDirPath = ".npm";
 
 if (!fs.existsSync(npmDirPath)) {
   // .npm directory does not exist, create it
   fs.mkdirSync(npmDirPath);
 }
 
-const certFilePath = '.npm/cert.pem';
-const privateKeyPath = '.npm/prk.pem'
-const publicKeyPath = '.npm/pub.pem'
+const certFilePath = ".npm/cert.pem";
+const privateKeyPath = ".npm/prk.pem";
+const publicKeyPath = ".npm/pub.pem";
 
 let privateKey;
 let publicKey;
 let cert;
 
-
 function generateGuid() {
   const serialNumberBuffer = crypto.randomBytes(8);
   const guidBuffer = crypto.randomBytes(16);
   serialNumberBuffer.copy(guidBuffer, 0, 0, 8); // Copy the serial number to the first 8 bytes of the GUID buffer
-  const guid = guidBuffer.toString('base64');
+  const guid = guidBuffer.toString("base64");
   return guid;
 }
 
-if (fs.existsSync(certFilePath) && fs.existsSync(privateKeyPath) && fs.existsSync(publicKeyPath)) {
-  cert = fs.readFileSync(certFilePath).toString('utf8');
-  privateKey = fs.readFileSync(privateKeyPath).toString('utf8');
-  publicKey = fs.readFileSync(publicKeyPath).toString('utf8');
+if (
+  fs.existsSync(certFilePath) &&
+  fs.existsSync(privateKeyPath) &&
+  fs.existsSync(publicKeyPath)
+) {
+  cert = fs.readFileSync(certFilePath).toString("utf8");
+  privateKey = fs.readFileSync(privateKeyPath).toString("utf8");
+  publicKey = fs.readFileSync(publicKeyPath).toString("utf8");
 } else {
-  const { privateKey: newPrivateKey, publicKey: newPublicKey } = crypto.generateKeyPairSync('rsa', {
-    modulusLength: 2048,
-    publicKeyEncoding: { type: 'spki', format: 'pem' },
-    privateKeyEncoding: { type: 'pkcs8', format: 'pem' },
-  });
+  const { privateKey: newPrivateKey, publicKey: newPublicKey } =
+    crypto.generateKeyPairSync("rsa", {
+      modulusLength: 2048,
+      publicKeyEncoding: { type: "spki", format: "pem" },
+      privateKeyEncoding: { type: "pkcs8", format: "pem" },
+    });
 
   privateKey = newPrivateKey;
   publicKey = newPublicKey;
   cert = generateSelfSignedCertificate(newPrivateKey, newPublicKey);
 
-  fs.writeFileSync(certFilePath, cert.toString('utf8'));
-  fs.writeFileSync(privateKeyPath, privateKey.toString('utf8'));
-  fs.writeFileSync(publicKeyPath, publicKey.toString('utf8'));
+  fs.writeFileSync(certFilePath, cert.toString("utf8"));
+  fs.writeFileSync(privateKeyPath, privateKey.toString("utf8"));
+  fs.writeFileSync(publicKeyPath, publicKey.toString("utf8"));
 }
-
 
 function generateSelfSignedCertificate(privateKey, publicKey) {
   const cert = forge.pki.createCertificate();
@@ -70,12 +71,12 @@ function generateSelfSignedCertificate(privateKey, publicKey) {
   cert.validity.notAfter = new Date();
   cert.validity.notAfter.setFullYear(cert.validity.notBefore.getFullYear() + 1);
   const attrs = [
-    { name: 'commonName', value: 'localhost' },
-    { name: 'countryName', value: 'US' },
-    { shortName: 'ST', value: 'California' },
-    { name: 'localityName', value: 'San Francisco' },
-    { name: 'organizationName', value: 'Acme Inc.' },
-    { shortName: 'OU', value: 'IT' },
+    { name: "commonName", value: "localhost" },
+    { name: "countryName", value: "US" },
+    { shortName: "ST", value: "California" },
+    { name: "localityName", value: "San Francisco" },
+    { name: "organizationName", value: "Acme Inc." },
+    { shortName: "OU", value: "IT" },
   ];
   cert.setSubject(attrs);
   cert.setIssuer(attrs);
@@ -83,13 +84,10 @@ function generateSelfSignedCertificate(privateKey, publicKey) {
   return forge.pki.certificateToPem(cert);
 }
 
-
-
 const sslOptions = {
   key: privateKey,
   cert,
 };
-
 
 const args = process.argv.slice(2);
 
@@ -144,26 +142,42 @@ if (args[0] === "add") {
   console.log(`Added ${hostname} to hosts file`);
 } else if (args[0] === "run") {
   const runServer = () => {
+    const options = {
+      http: {
+        websockets: "yes",
+        keepAlive: "yes",
+      },
+      https: {
+        port: 443,
+        key: privateKeyPath,
+        cert: certFilePath,
+        keepAlive: "yes",
+        websockets: "yes",
+      },
+      wss: {
+        port: 443,
+        key: privateKeyPath,
+        cert: certFilePath,
+      },
+      log: {
+        // debug: function(e) { console.log(e)},
+        // notice: function(e) { console.log(e)},
+        error: function (err) {
+          if (err.stack) {
+            console.error(err.stack);
+          } else {
+            console.error(err);
+          }
+        },
+      },
+    };
 
+    const redwire = new RedWire(options);
 
-    const server = https.createServer(sslOptions, (req, res) => {
-      const port = getPortFromHosts().find(
-        (a) =>
-          a?.hostname && a?.hostname?.includes(req.headers.host.split(":")[0])
-      )?.port;
-      if (port) {
-        const target = `http://localhost:${port}`;
-        const parsedUrl = parse(req.url, true);
-        handle(req, res, parsedUrl, port);
-      } else {
-        res.writeHead(404, { "Content-Type": "text/plain" });
-        res.write("Port Not Found\n");
-        res.end();
-      }
-    });
-
-    server.listen(443, "0.0.0.0", () => {
-      console.log("Spoofify is running");
+    getPortFromHosts().forEach((a) => {
+      redwire.https(a.hostname, `localhost:${a.port}`);
+      redwire.proxy(a.hostname, `localhost:${a.port}`);
+      redwire.httpsWs(a.hostname, `localhost:${a.port}`);
     });
   };
 
@@ -171,25 +185,6 @@ if (args[0] === "add") {
 } else {
   console.log("Invalid command. Usage: Spoofify add <hostname> [port]");
 }
-
-const handle = (req, res, parsedUrl, port) => {
-  const targetUrl = `http://localhost:${port}${parsedUrl.path}`;
-
-  const options = {
-    hostname: "localhost",
-    port,
-    path: parsedUrl.path,
-    method: req.method,
-    headers: req.headers,
-  };
-
-  const proxyReq = http.request(options, (proxyRes) => {
-    res.writeHead(proxyRes.statusCode, proxyRes.headers);
-    proxyRes.pipe(res);
-  });
-
-  req.pipe(proxyReq);
-};
 
 function getPortFromHosts() {
   const hostsFile = fs.readFileSync("/etc/hosts", "utf-8");

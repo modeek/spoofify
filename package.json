@@ -1,20 +1,19 @@
 {
   "scripts": {
-    "spoofify": "node ./app/spoofify.js"
+    "spoofify-test": "node ./app/spoofify.js"
   },
   "dependencies": {
     "cross-spawn": "^7.0.3",
     "crypto": "^1.0.1",
-    "http": "^0.0.1-security",
-    "https": "^1.0.0",
     "node-forge": "^1.3.1",
+    "redwire": "^2.2.0",
     "sudo-prompt": "^9.2.1",
     "tls": "^0.0.1",
     "url": "^0.11.0"
   },
   "name": "spoofify",
   "description": "Spoof DNS records locally to create a better testing environment",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "main": "app/spoofify.js",
   "devDependencies": {},
   "repository": {
