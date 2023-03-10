@@ -5,6 +5,7 @@ const sudo = require("sudo-prompt");
 const crypto = require("crypto");
 const forge = require("node-forge");
 const RedWire = require("redwire");
+const os = require("os");
 
 const { parse } = require("url");
 
@@ -43,9 +44,18 @@ if (
   fs.existsSync(privateKeyPath) &&
   fs.existsSync(publicKeyPath)
 ) {
-  cert = fs.readFileSync(certFilePath).toString("utf8");
-  privateKey = fs.readFileSync(privateKeyPath).toString("utf8");
-  publicKey = fs.readFileSync(publicKeyPath).toString("utf8");
+  cert =
+    (os.platform() === "linux" &&
+      fs.readFileSync(certFilePath).toString("utf8")) ||
+    fs.readFileSync(certFilePath);
+  privateKey =
+    (os.platform() === "linux" &&
+      fs.readFileSync(privateKeyPath).toString("utf8")) ||
+    fs.readFileSync(privateKeyPath);
+  publicKey =
+    (os.platform() === "linux" &&
+      fs.readFileSync(publicKeyPath).toString("utf8")) ||
+    fs.readFileSync(publicKeyPath);
 } else {
   const { privateKey: newPrivateKey, publicKey: newPublicKey } =
     crypto.generateKeyPairSync("rsa", {
