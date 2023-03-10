@@ -154,6 +154,7 @@ if (args[0] === "add") {
   const runServer = () => {
     const options = {
       http: {
+        port: 80,
         websockets: "yes",
         keepAlive: "yes",
       },
