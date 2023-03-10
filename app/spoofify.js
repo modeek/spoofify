@@ -109,7 +109,7 @@ function sudoWriteFileSync(file, content) {
 
 if (args[0] === "add") {
   const hostname = args[1];
-  const port = args[2] ? `#port=${args[2]}` : "";
+  const port = args[2] ? `#port=${args[2]}` : `#port=${3002}`;
   const entry = `127.0.0.1 ${hostname} ${port}`;
 
   let hostsFilePath;
