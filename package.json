@@ -13,7 +13,7 @@
   },
   "name": "spoofify",
   "description": "Spoof DNS records locally to create a better testing environment",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "main": "app/spoofify.js",
   "devDependencies": {},
   "repository": {
