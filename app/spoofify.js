@@ -9,13 +9,6 @@ const os = require("os");
 
 const { parse } = require("url");
 
-function generateGuid() {
-  const buf = crypto.randomBytes(16);
-  buf[6] = (buf[6] & 0x0f) | 0x40; // set version to 4
-  buf[8] = (buf[8] & 0x3f) | 0x80; // set variant to RFC 4122
-  return Buffer.from(buf).toString("base64");
-}
-
 const npmDirPath = ".npm";
 
 if (!fs.existsSync(npmDirPath)) {
@@ -45,10 +38,10 @@ if (
   fs.existsSync(publicKeyPath)
 ) {
   cert =
-    (os.platform() === "linux" &&
-      fs.readFileSync(certFilePath).toString("utf8")) ||
-    fs.readFileSync(certFilePath);
-  privateKey =
+  (os.platform() === "linux" &&
+    fs.readFileSync(certFilePath).toString("utf8")) ||
+  fs.readFileSync(certFilePath);
+privateKey =
     (os.platform() === "linux" &&
       fs.readFileSync(privateKeyPath).toString("utf8")) ||
     fs.readFileSync(privateKeyPath);
