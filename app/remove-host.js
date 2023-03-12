@@ -6,33 +6,28 @@ const { sudoWriteFileSync, getHostsFilePath } = require("./utils");
 
 
 
-function addHost(hostname, port = 3000) {
+function removeHost(hostname) {
   const hostsFilePath = getHostsFilePath();
-  const entry = `127.0.0.1 ${hostname} #port=${port}`;
 
   const hostsFile = fs.readFileSync(hostsFilePath, "utf-8");
   const lines = hostsFile.split("\n");
 
-  if (lines.findIndex((a) => a === entry) > -1) {
-    console.error(`${hostname}:${port} already exists in hosts file`);
+  if (lines.findIndex((a) => a.startsWith(`127.0.0.1 ${hostname}`)) < 0) {
+    console.error(`${hostname} does not exists in hosts file`);
     return;
   }
 
   const newLines = lines.map((line) => {
     if (line.startsWith(`127.0.0.1 ${hostname}`)) {
-      return entry;
+      return ''
     }
     return line;
   });
 
-  if (newLines.indexOf(entry) === -1) {
-    newLines.push(entry);
-  }
-
   const newHostsFile = newLines.join("\n");
   sudoWriteFileSync(hostsFilePath, newHostsFile);
-  console.log(`Added ${hostname} to hosts file`);
+  console.log(`Removed ${hostname} from hosts file`);
 }
 
 
-module.exports = addHost;
+module.exports = removeHost;

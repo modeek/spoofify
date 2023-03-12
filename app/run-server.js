@@ -35,6 +35,8 @@ function runServer() {
     },
   };
 
+  console.log('Spoofify is running!')
+
   const redwire = new RedWire(options);
 
   const { getPortFromHosts } = require("./utils");
