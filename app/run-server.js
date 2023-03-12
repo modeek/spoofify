@@ -1,4 +1,4 @@
-const fs = require("fs");
+#!/usr/bin/env node
 const RedWire = require("redwire");
 
 const { privateKey, cert } = require("./ssl-config");

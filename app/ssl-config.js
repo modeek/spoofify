@@ -1,7 +1,7 @@
+#!/usr/bin/env node
 const fs = require("fs");
 const crypto = require("crypto");
 const forge = require("node-forge");
-const os = require("os");
 
 const npmDirPath = ".npm";
 

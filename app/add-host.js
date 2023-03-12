@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 const fs = require("fs");
 const sudo = require("sudo-prompt");
 const { platform } = require("os");
