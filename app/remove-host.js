@@ -4,8 +4,6 @@ const sudo = require("sudo-prompt");
 const { platform } = require("os");
 const { sudoWriteFileSync, getHostsFilePath } = require("./utils");
 
-
-
 function removeHost(hostname) {
   const hostsFilePath = getHostsFilePath();
 
@@ -19,15 +17,14 @@ function removeHost(hostname) {
 
   const newLines = lines.map((line) => {
     if (line.startsWith(`127.0.0.1 ${hostname}`)) {
-      return ''
+      console.log(`Removing ${line.split(" ")[1]} from hosts file`);
+      return "";
     }
     return line;
   });
 
   const newHostsFile = newLines.join("\n");
   sudoWriteFileSync(hostsFilePath, newHostsFile);
-  console.log(`Removed ${hostname} from hosts file`);
 }
-
 
 module.exports = removeHost;
