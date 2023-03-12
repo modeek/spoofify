@@ -8,7 +8,7 @@ function sudoWriteFileSync(file, content) {
   return sudo.exec(command, options);
 }
 
-function addHost(hostname, port) {
+function addHost(hostname, port = 3000) {
   const hostsFilePath = getHostsFilePath();
   const entry = `127.0.0.1 ${hostname} #port=${port}`;
 
