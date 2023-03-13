@@ -5,7 +5,7 @@ const forge = require("node-forge");
 const os = require("os");
 
 function getPortFromHosts() {
-  const hostsFile = fs.readFileSync("/etc/hosts", "utf-8");
+  const hostsFile = fs.readFileSync(getHostsFilePath(), "utf-8");
   const lines = hostsFile.split("\n");
   const hosts = [];
   for (const line of lines) {
