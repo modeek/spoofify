@@ -79,4 +79,4 @@ const sslOptions = {
   cert,
 };
 
-module.exports = sslOptions;
+module.exports = { sslOptions, certFilePath, privateKeyPath, publicKeyPath };
