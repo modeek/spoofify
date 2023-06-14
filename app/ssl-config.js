@@ -24,7 +24,7 @@ function generateGuid() {
   const serialNumberBuffer = crypto.randomBytes(8);
   const guidBuffer = crypto.randomBytes(16);
   serialNumberBuffer.copy(guidBuffer, 0, 0, 8); // Copy the serial number to the first 8 bytes of the GUID buffer
-  const guid = guidBuffer.toString("base64");
+  const guid = guidBuffer.toString("base64").replace(/=+$/, "").replace(/=/g, "");
   return guid;
 }
 
