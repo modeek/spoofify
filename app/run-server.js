@@ -1,7 +1,7 @@
-const fs = require("fs");
+#!/usr/bin/env node
 const RedWire = require("redwire");
 
-const { privateKey, cert } = require("./ssl-config");
+const { privateKeyPath, certFilePath } = require("./ssl-config");
 
 function runServer() {
   const options = {
@@ -12,15 +12,15 @@ function runServer() {
     },
     https: {
       port: 443,
-      key: privateKey,
-      cert,
+      key: privateKeyPath,
+      cert: certFilePath,
       keepAlive: "yes",
       websockets: "yes",
     },
     wss: {
       port: 443,
-      key: privateKey,
-      cert,
+      key: privateKeyPath,
+      cert: certFilePath,
     },
     log: {
       // debug: function(e) { console.log(e)},
@@ -34,6 +34,8 @@ function runServer() {
       },
     },
   };
+
+  console.log("Spoofify is running!");
 
   const redwire = new RedWire(options);
 
